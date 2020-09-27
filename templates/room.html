@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/room.css') }}">
+    <title> {{ room.title }} </title>
+</head>
+<body>
+<a href="{{ url_for('lobby', lobby_id=lobby) }}">Lobby</a>
+<div>
+    <h1>Matches</h1>
+    <table>
+        <tr>
+            <th>Game</th>
+            <th>Players</th>
+            <th>Mode</th>
+            <th>Map</th>
+            <th>Result</th>
+            <th>Network</th>
+        </tr>
+        {% for match, count in match_counts %}
+        <tr>
+            <td><button>{{ match.title }}</button></td>
+            <td>{{ count }}/{{ match.players }}</td>
+            <td>{{ match.mode }}</td>
+            <td>{{ match.map }}</td>
+            <td>{{ match.result }}</td>
+            <td>{{ match.network }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div>
+    <h1>Players</h1>
+    {{ player_stats.format()|safe }}
+</div>
+<div>
+    <h1>Colors</h1>
+    {{ color_stats.format()|safe }}
+</div>
+</body>
+</html>

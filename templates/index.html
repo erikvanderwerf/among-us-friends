@@ -1,0 +1,16 @@
+<html>
+<head>
+    <title>Among Us Friends</title>
+</head>
+<body>
+<h1>Lobbies</h1>
+<a href="{{ url_for('new_lobby') }}">Create a New Lobby</a>
+<ul>
+    {% for item in lobbies %}
+    <li>
+        <a href="{{ url_for('lobby', lobby_id=item.uuid.hex) }}">{{ item.title }} </a>
+    </li>
+    {% endfor %}
+</ul>
+</body>
+</html>

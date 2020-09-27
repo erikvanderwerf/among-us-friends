@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Make a new Lobby</title>
+</head>
+<body>
+<h1>Create a New Lobby</h1>
+<div>
+    <a href=" {{ url_for('index') }}">Go Back</a>
+</div>
+<form>
+    <div>
+        <label for="title">Lobby Title</label>
+        <input id="title" type="text" name="title">
+    </div>
+    <div>
+        <label for="anyone">Public Lobby?</label>
+        <input id="anyone" type="checkbox" name="anyone">
+    </div>
+    <div>
+        <input type="submit" formmethod="post">
+    </div>
+</form>
+</body>
+</html>
