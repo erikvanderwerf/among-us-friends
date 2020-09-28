@@ -37,7 +37,7 @@ def de_fuzz_usernames():
 
 def get_by_fuzzy_username(fuzzy):
     with Repository(DB_PATH, SCHEMA_PATH) as repo:
-        return repo.user_dao().require_user(fuzz_police[fuzzy.strip()])
+        return repo.user_dao().require_username(fuzz_police[fuzzy.strip()])
 
 
 class CsvRowMatch:

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ game.title }}</title>
+</head>
+<body>
+<button onclick="window.location.href='{{ url_for('rooms.room', room_id=game.room.uuid.hex) }}'">Back to Room</button>
+{% if admin_rights %}
+<button onclick="window.location.href='{{ url_for('games.game_admin', game_id=game.uuid.hex) }}'">Game Admin</button>
+{% endif %}
+</body>
+</html>

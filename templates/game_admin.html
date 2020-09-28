@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ game.title }} Administration</title>
+</head>
+<body>
+<button onclick="window.location.href='{{ url_for('games.game', game_id=game.uuid.hex) }}'">Back to Game</button>
+<button onclick="window.location.href='{{ url_for('games.delete', game_id=game.uuid.hex) }}'">Close Game</button>
+</body>
+</html>

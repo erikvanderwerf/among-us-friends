@@ -8,9 +8,10 @@
 <p>This is a {% if lobby.public %} public {% else %} private {% endif %} lobby</p>
 <div>
     <h2>Rooms</h2>
+    <button onclick="window.location.href='{{ url_for('lobbies.create_room', lobby_id=lobby.uuid.hex) }}'">Create Room</button>
     <ol>
         {% for room in rooms %}
-        <li><a href="{{ url_for('room', room_id=room.uuid.hex) }}">{{ room.title }}</a></li>
+        <li><a href="{{ url_for('rooms.room', room_id=room.uuid.hex) }}">{{ room.title }}</a></li>
         {% endfor %}
     </ol>
 </div>

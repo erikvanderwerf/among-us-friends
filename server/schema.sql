@@ -1,7 +1,3 @@
-CREATE TABLE meta (
-    hash  TEXT NOT NULL
-);
-
 CREATE TABLE users (
     rowid    INTEGER PRIMARY KEY,
     uuid     TEXT UNIQUE NOT NULL,

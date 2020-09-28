@@ -8,7 +8,7 @@ class KeyedDefaultDict(defaultdict):
 
     def __str__(self):
         return self.__class__.__name__ + '(default=' + self.my_factory + ', ' \
-            + '='.join((repr(k), v) for k, v in self.items()) + ')'
+            + ', '.join(f'{k!r}={v}' for k, v in self.items()) + ')'
 
     def __missing__(self, key):
         if self.my_factory is None:

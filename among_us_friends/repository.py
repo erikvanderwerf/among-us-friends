@@ -26,10 +26,6 @@ class RepositoryException(Exception):
     pass
 
 
-class NotValidException(RepositoryException):
-    pass
-
-
 class UnknownTypeException(RepositoryException):
     pass
 
@@ -102,6 +98,8 @@ def sqlite_row(name, fields, *, type_conversions=None, bases=None):
         rowid: int
 
         def __init__(self, row):
+            if row is None:
+                raise ValueError('row was None')
             self._row = row
 
         def __repr__(self):
@@ -136,6 +134,7 @@ def sqlite_row(name, fields, *, type_conversions=None, bases=None):
     return t
 
 
+SqliteGame = sqlite_row('SqliteGame', 'rowid:int room_id:int owner:int uuid:uuid title:str')
 SqliteLobby = sqlite_row('SqliteLobby', 'rowid:int uuid:uuid title:str anyone:bool')
 SqliteMatch = sqlite_row('SqliteMatch', 'rowid:int room_id:int owner:int host:int uuid:uuid title:str end_at:str '
                                         'players:int mode:str map:str result:str network:str')
@@ -144,6 +143,39 @@ SqliteUser = sqlite_row('SqliteUser', 'rowid:int uuid:uuid username:str password
 SqliteUser.secure = property(lambda self: bool(self.password_hash))
 SqliteResult = sqlite_row('SqluteResult', 'rowid:int matchid:int user_id:int uuid:uuid r_time:str platform:str '
                                           'color:str imposter:bool victory:bool death:bool comments:str')
+
+
+class GameDao(SqliteDao):
+    def create(self, room_id: UUID, owner: User, title: str):
+        c = self.conn.cursor()
+        u = uuid4()
+        self.conn.mark()
+        c.execute('INSERT INTO games (room_id, owner, uuid, title) VALUES ('
+                  '  (SELECT rowid FROM rooms WHERE uuid == ?),'
+                  '  (SELECT rowid FROM users WHERE uuid == ?),'
+                  '  ?, ?)',
+                  (room_id.hex, owner.uuid.hex, u.hex, title))
+        return u
+
+    def delete_by_uuid(self, uuid: UUID):
+        c = self.conn.cursor()
+        self.conn.mark()
+        c.execute('DELETE FROM games WHERE uuid == ?', (uuid.hex,))
+        c.close()
+
+    def get_by_uuid(self, uuid: UUID):
+        c = self.conn.cursor()
+        c.execute('SELECT * FROM games WHERE uuid == ?', (uuid.hex,))
+        row = c.fetchone()
+        c.close()
+        return SqliteGame(row)
+
+    def list_for_room(self, room: Room):
+        c = self.conn.cursor()
+        c.execute('SELECT * FROM games WHERE room_id == (SELECT rowid FROM rooms WHERE uuid == ?)', (room.uuid.hex,))
+        rows = c.fetchall()
+        c.close()
+        return (SqliteGame(row) for row in rows)
 
 
 class LobbyDao(SqliteDao):
@@ -170,13 +202,13 @@ class LobbyDao(SqliteDao):
         c.close()
         return (SqliteLobby(r) for r in rows)
 
-    def require_lobby(self, room_id: UUID):
+    def require_lobby(self, lobby_id: UUID):
         c = self.conn.cursor()
-        c.execute("SELECT * FROM lobbies WHERE uuid == ? LIMIT 1", (room_id.hex,))
+        c.execute("SELECT * FROM lobbies WHERE uuid == ? LIMIT 1", (lobby_id.hex,))
         row = c.fetchone()
         c.close()
         if row is None:
-            raise NotFoundException(room_id)
+            raise NotFoundException(lobby_id)
         return SqliteLobby(row)
 
 
@@ -248,6 +280,13 @@ class RoomDao(SqliteDao):
         c.close()
         return Room(uuid, room_title)
 
+    def get_by_rowid(self, rowid: int):
+        c = self.conn.cursor()
+        c.execute('SELECT * FROM rooms WHERE rowid == ?', (rowid,))
+        row = c.fetchone()
+        c.close()
+        return SqliteRoom(row)
+
     def list(self):
         c = self.conn.cursor()
         c.execute("SELECT * FROM rooms")
@@ -293,18 +332,27 @@ class UserDao(SqliteDao):
     def list(self):
         c = self.conn.cursor()
         c.execute('SELECT * FROM users')
-        users = c.fetchall()
+        rows = c.fetchall()
         c.close()
-        return users
+        return (SqliteUser(row) for row in rows)
 
-    def require_user(self, username: str):
+    def require_username(self, username: str):
         c = self.conn.cursor()
         c.execute('SELECT * FROM users WHERE username == ? LIMIT 1', (username,))
-        user = c.fetchone()
+        row = c.fetchone()
         c.close()
-        if user is None:
+        if row is None:
             raise NotFoundException(username)
-        return SqliteUser(user)
+        return SqliteUser(row)
+
+    def require_uuid(self, uuid: UUID):
+        c = self.conn.cursor()
+        c.execute('SELECT * FROM users WHERE uuid == ?', (uuid.hex,))
+        row = c.fetchone()
+        c.close()
+        if row is None:
+            raise NotFoundException(uuid)
+        return SqliteUser(row)
 
 
 class Repository(AmongUsConnection):
@@ -339,23 +387,7 @@ class Repository(AmongUsConnection):
         schema, schema_hash = cls._read_schema(schema_path)
         s = schema.decode('utf-8')
         conn.executescript(s)
-        conn.execute("INSERT INTO meta (hash) VALUES (?)", (schema_hash,))
         conn.commit()
-
-    @classmethod
-    def _verify(cls, conn, schema_path: Path):
-        schema_hash = cls._read_schema(schema_path)[1]
-        try:
-            cur = conn.cursor()
-            cur.execute("SELECT (hash) FROM meta LIMIT 1")
-            row = cur.fetchone()
-        except Exception as e:
-            raise NotValidException(str(e))
-        if row is None:
-            raise NotValidException("row was None")
-        if schema_hash != row[0]:
-            raise NotValidException("different hash")
-        return
 
     def open(self):
         self._active.acquire()
@@ -364,20 +396,13 @@ class Repository(AmongUsConnection):
             existed = self.db_path.exists()
             self._conn = sqlite3.connect(self.db_path)
             try:
-                if existed:
-                    Repository._verify(self._conn, self.schema_path)
                 if not existed:
                     Repository._first_run(self._conn, self.schema_path)
             except Exception as e:
                 logger.exception(e)
                 self._conn.close()
                 self._conn = None
-                if isinstance(e, NotValidException):
-                    retry = True
-                    os.remove(self.db_path)
-                else:
-                    raise
-                continue
+                raise
             return self
         raise RepositoryException("Could not open the repo.")
 
@@ -395,6 +420,9 @@ class Repository(AmongUsConnection):
         self._conn.rollback()
         self._dirty = False
         return None
+
+    def game_dao(self):
+        return GameDao(self)
 
     def lobby_dao(self):
         return LobbyDao(self)

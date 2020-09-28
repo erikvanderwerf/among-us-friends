@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/room.css') }}">
+<!--    <script type="text/javascript" src="{{ url_for('static',filename='src/js/room.js') }}"></script>-->
     <title> {{ room.title }} </title>
 </head>
 <body>
-<a href="{{ url_for('lobby', lobby_id=lobby) }}">Lobby</a>
+<button onclick="window.location.href='{{ url_for('lobbies.lobby', lobby_id=lobby) }}'">Back to Lobby</button>
+<div>
+    <h1>Games</h1>
+    <button onclick="window.location.href='{{ url_for('rooms.create_game', room_id=room.uuid.hex) }}'">
+        Make New Game</button>
+    {{ games.format()|safe }}
+</div>
 <div>
     <h1>Matches</h1>
     <table>
