@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/base.css') }}">
+    {% endblock %}
+</head>
+<body>
+<div id="header">
+    <div id="head-ident">{% block header_nav %}{% endblock %}</div>
+
+    <h2 class="hitem" id="username">{{ user.username }}</h2>
+    {% if user is none or not user.is_authenticated %}
+    <a class="hitem" href="{{ url_for('login') }}">Login</a>
+    {% else %}
+    <a class="hitem" href="{{ url_for('logout') }}">Logout</a>
+    {% endif %}
+</div>
+<div id="content">{% block content %}{% endblock %}</div>
+</body>
+</html>

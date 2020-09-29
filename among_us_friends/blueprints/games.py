@@ -44,19 +44,9 @@ def game(game_id):
         try:
             game = Game(repo, UUID(game_id))
             admin_rights = current_user.uuid == game.owner.uuid
-            return render_template('game.html', game=game, admin_rights=admin_rights)
+            return render_template('game.html', game=game, admin_rights=admin_rights, user=current_user)
         except ValueError:
             raise NotFound()
-
-
-@games.route('/games/<game_id>/admin')
-@login_required
-def game_admin(game_id):
-    with open_repository() as repo:
-        game = Game(repo, UUID(game_id))
-        if current_user.uuid != game.owner.uuid:
-            raise Unauthorized()
-        return render_template('game_admin.html', game=game)
 
 
 @games.route('/games/<game_id>/delete')
@@ -71,3 +61,20 @@ def delete(game_id):
         repo.game_dao().delete_by_uuid(uuid)
         repo.commit()
     return redirect(url_for('rooms.room', room_id=room.uuid.hex))
+
+
+@games.route('/games/<game_id>/admin')
+@login_required
+def game_admin(game_id):
+    with open_repository() as repo:
+        game = Game(repo, UUID(game_id))
+        if current_user.uuid != game.owner.uuid:
+            raise Unauthorized()
+        return render_template('game_admin.html', game=game, user=current_user)
+
+
+@games.route('/games/<game_id>/admin', methods=['POST'])
+@login_required
+def game_admin_post(game_id):
+    with open_repository() as repo:
+        repo.match_dao().create()

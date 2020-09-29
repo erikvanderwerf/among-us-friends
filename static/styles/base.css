@@ -1,0 +1,26 @@
+.hnav {
+    margin: 1em;
+    color: white
+}
+
+.hitem {
+    margin: 1em;
+    align-items: center
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+#header {
+    background-color: #5DADE2;
+    display: flex;
+}
+
+#head-ident {
+    flex-grow: 1
+}
+
+#username {
+    color: white;
+}

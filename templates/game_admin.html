@@ -1,11 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ game.title }} Administration</title>
-</head>
-<body>
-<button onclick="window.location.href='{{ url_for('games.game', game_id=game.uuid.hex) }}'">Back to Game</button>
-<button onclick="window.location.href='{{ url_for('games.delete', game_id=game.uuid.hex) }}'">Close Game</button>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}{{ game.title }}{% endblock %}
+{% block header_nav %}
+<a class="hnav" href="{{ url_for('games.game', game_id=game.uuid.hex) }}">Back to Game</a>
+<a class="hnav" href="{{ url_for('games.delete', game_id=game.uuid.hex) }}">Close Game</a>
+{% endblock %}
+{% block content %}
+<form>
+    <div>
+        <label for="title">Match Title</label>
+        <input id="title" type="text" name="title" value="{{ game.match_title }}">
+    </div>
+    <div>
+        <label for="host">Game Host</label>
+        <input id="host" type="text" name="host" value="{{ game.host }}">
+    </div>
+    <div>
+        <label for="players">Num Players</label>
+        <input id="players" type="text" name="players" value="{{ game.players }}">
+    </div>
+    <div>
+        <label for="mode">Mode</label>
+        <input id="mode" type="text" name="mode" value="{{ game.mode }}">
+    </div>
+    <div>
+        <label for="map">Map</label>
+        <input id="map" type="text" name="map" value="{{ game.map }}">
+    </div>
+    <div>
+        <label for="result">Result</label>
+        <input id="result" type="text" name="result" value="{{ game.result }}">
+    </div>
+    <div>
+        <label for="network">Network</label>
+        <input id="network" type="text" name="network" value="{{ game.network }}">
+    </div>
+    <input type="submit" formmethod="post">
+</form>
+{% endblock %}

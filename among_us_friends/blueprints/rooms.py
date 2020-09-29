@@ -15,6 +15,7 @@ rooms = Blueprint('rooms', __name__)
 
 
 @rooms.route("/rooms/<room_id>")
+@login_required
 def room(room_id):
     room_uuid = UUID(room_id)
     with open_repository() as repo:
@@ -32,7 +33,7 @@ def room(room_id):
     matches = {m.rowid: m for m in matches}
     match_counts = ((matches.get(k, None), counts.get(k, None)) for k in counts.keys() | matches.keys())
     return render_template(
-        'room.html', room=room, match_counts=match_counts,
+        'room.html', room=room, match_counts=match_counts, user=current_user,
         lobby=lobby_id,
         games=HtmlGamesFormatter(games),
         player_stats=HtmlImposterStatsFormatter(player_stats),

@@ -217,7 +217,8 @@ class MatchDao(SqliteDao):
         uuid = uuid4()
         c = self.conn.cursor()
         self.conn.mark()
-        c.execute('INSERT INTO matches (room_id, owner, host, uuid, title, end_at, players, mode, map, result, network) '
+        c.execute('INSERT INTO matches '
+                  '(room_id, owner, host, uuid, title, end_at, players, mode, map, result, network) '
                   'VALUES ('
                   '(SELECT rowid FROM rooms WHERE uuid == ?), '
                   '(SELECT rowid FROM users WHERE uuid == ?), '

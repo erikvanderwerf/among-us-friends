@@ -51,6 +51,10 @@ class UserWrap:
     def uuid(self):
         return self._user.uuid
 
+    @property
+    def username(self):
+        return self._user.username
+
 
 @login.user_loader
 def load_user(uuid: str):

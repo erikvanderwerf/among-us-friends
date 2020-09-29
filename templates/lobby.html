@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ lobby.title }}</title>
-</head>
+{% extends "base.html" %}
+{% block title %}{{ lobby.title }}{% endblock %}
+{% block content %}
 <body>
-<p>This is a {% if lobby.public %} public {% else %} private {% endif %} lobby</p>
+<p>This is a {% if lobby.anyone %} public {% else %} private {% endif %} lobby</p>
 <div>
     <h2>Rooms</h2>
     <button onclick="window.location.href='{{ url_for('lobbies.create_room', lobby_id=lobby.uuid.hex) }}'">Create Room</button>
@@ -15,5 +12,4 @@
         {% endfor %}
     </ol>
 </div>
-</body>
-</html>
+{% endblock %}

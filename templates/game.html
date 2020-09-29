@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ game.title }}</title>
-</head>
-<body>
-<button onclick="window.location.href='{{ url_for('rooms.room', room_id=game.room.uuid.hex) }}'">Back to Room</button>
+{% extends "base.html" %}
+{% block title %}{{ game.title }}{% endblock %}
+{% block header_nav %}
+<a class="hnav" href="{{ url_for('rooms.room', room_id=game.room.uuid.hex) }}">Back to Room</a>
 {% if admin_rights %}
-<button onclick="window.location.href='{{ url_for('games.game_admin', game_id=game.uuid.hex) }}'">Game Admin</button>
+<a class="hnav" href="{{ url_for('games.game_admin', game_id=game.uuid.hex) }}">Game Admin</a>
 {% endif %}
-</body>
-</html>
+{% endblock %}
+{% block content %}
+
+{% endblock %}
