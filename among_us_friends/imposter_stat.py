@@ -83,7 +83,7 @@ class HtmlImposterStatsFormatter:
               '<th>Losses Crewmate</th>' \
               '<th>Losses Imposter</th>' \
               '</tr>'
-        for p in self.imposters:
+        for p in sorted(self.imposters, key=lambda k: k.total_matches, reverse=True):
             fmt += '<tr>' \
                    f'<td>{p.title}</td>' \
                    f'<td>{p.total_matches}</td>' \

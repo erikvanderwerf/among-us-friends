@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ game.title }}{% endblock %}
 {% block header_nav %}
-<a class="hnav" href="{{ url_for('rooms.room', room_id=game.room.uuid.hex) }}">Back to Room</a>
+<a class="hnav" href="{{ url_for('rooms.room', room_id=game.room) }}">Back to Room</a>
 {% if admin_rights %}
-<a class="hnav" href="{{ url_for('games.game_admin', game_id=game.uuid.hex) }}">Game Admin</a>
+<a class="hnav" href="{{ url_for('games.game_admin', game_id=game.uuid) }}">Game Admin</a>
 {% endif %}
 {% endblock %}
 {% block content %}

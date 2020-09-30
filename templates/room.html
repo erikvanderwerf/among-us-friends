@@ -20,6 +20,8 @@
             <th>Map</th>
             <th>Result</th>
             <th>Network</th>
+            <th>Imposters</th>
+            <th>Panda Count</th>
         </tr>
         {% for match, count in match_counts %}
         <tr>
@@ -29,6 +31,8 @@
             <td>{{ match.map }}</td>
             <td>{{ match.result }}</td>
             <td>{{ match.network }}</td>
+            <td>{{ match.imposters }}</td>
+            <td>{{ match.panda_count }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -40,5 +44,9 @@
 <div>
     <h1>Colors</h1>
     {{ color_stats.format()|safe }}
+</div>
+<div>
+    <h1>Correlations</h1>
+    {{ correlations.format()|safe }}
 </div>
 {% endblock %}

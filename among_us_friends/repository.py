@@ -212,6 +212,13 @@ class LobbyDao(SqliteDao):
         return SqliteLobby(row)
 
 
+class PandaMatch(SqliteMatch):
+    def __init__(self, rows, imposters, panda_count):
+        super(PandaMatch, self).__init__(rows)
+        self.imposters = imposters
+        self.panda_count = panda_count
+
+
 class MatchDao(SqliteDao):
     def create(self, match):
         uuid = uuid4()
@@ -229,13 +236,35 @@ class MatchDao(SqliteDao):
         c.close()
         return c.lastrowid
 
-    def list_for_room(self, room):
+    def list_for_room(self, room, mode='%'):
         c = self.conn.cursor()
-        c.execute('SELECT * FROM matches WHERE room_id == '
-                  '  (SELECT rowid FROM rooms WHERE uuid == ?)', (room.uuid.hex,))
+        c.execute('SELECT * FROM matches WHERE'
+                  ' room_id == (SELECT rowid FROM rooms WHERE uuid == ?) AND'
+                  ' mode LIKE ?',
+                  (room.uuid.hex, mode))
         rows = c.fetchall()
         c.close()
-        return (SqliteMatch(r) for r in rows)
+        for row in rows:
+            imposters = ', '.join(u.username for u in self.imposters_for_match(row[0]))
+            grep = self.grep(row[0], 'panda')
+            yield PandaMatch(row, imposters, grep)
+
+    def imposters_for_match(self, rowid: int):
+        c = self.conn.cursor()
+        c.execute('SELECT * FROM users WHERE rowid IN ('
+                  '  SELECT user_id FROM results WHERE match_id == ? AND imposter == 1)',
+                  (rowid,))
+        rows = c.fetchall()
+        c.close()
+        return (SqliteUser(r) for r in rows)
+
+    def grep(self, rowid:int, pattern: str):
+        c = self.conn.cursor()
+        c.execute('SELECT COUNT(*) FROM results WHERE match_id == ? AND comments LIKE ? COLLATE NOCASE',
+                  (rowid, '%' + pattern + '%'))
+        row = c.fetchone()
+        c.close()
+        return f'{row[0]}'
 
 
 class ResultDao(SqliteDao):

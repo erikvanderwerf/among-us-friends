@@ -2,8 +2,8 @@ import logging
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from flask import Flask, render_template, request, json, url_for, session
-from flask_login import LoginManager, login_required, current_user, logout_user, login_user, UserMixin
+from flask import Flask, render_template, request, json, url_for
+from flask_login import LoginManager, login_required, current_user, logout_user, login_user
 from werkzeug.utils import redirect
 
 from among_us_friends.blueprints import open_repository
@@ -11,6 +11,7 @@ from among_us_friends.blueprints.api import api
 from among_us_friends.blueprints.games import games
 from among_us_friends.blueprints.lobbies import lobbies
 from among_us_friends.blueprints.rooms import rooms
+from among_us_friends.blueprints.users import users
 from among_us_friends.repository import SqliteUser, NotFoundException
 
 DB_PATH = Path('server/db.sqlite')
@@ -20,9 +21,10 @@ CONFIG_PATH = Path("server/config.cfg")
 
 if not CONFIG_PATH.exists():
     with open(CONFIG_PATH, 'w') as fp:
-        fp.write(f'SECRET_KEY = \'{uuid4().hex}\'\n'
-                 f'DB_PATH = \'{DB_PATH}\'\n'
-                 f'SCHEMA_PATH = \'{SCHEMA_PATH}\'\n')
+        fp.write(f'SECRET_KEY = "{uuid4().hex}"\n'
+                 f'DB_PATH = "{DB_PATH}"\n'
+                 f'SCHEMA_PATH = "{SCHEMA_PATH}"\n'
+                 f'GAME_SERVICE = ("localhost", 4700)')
 
 
 app = Flask('among-us-friends')
@@ -71,6 +73,7 @@ logger = logging.getLogger()
 
 
 app.register_blueprint(api)
+app.register_blueprint(users)
 app.register_blueprint(lobbies)
 app.register_blueprint(rooms)
 app.register_blueprint(games)
@@ -120,16 +123,6 @@ def logout():
 def dump():
     with open_repository() as repo:
         return '<pre>' + '\n'.join(repo._conn.iterdump())
-
-
-@app.route('/users')
-def users():
-    ret = '<ul>'
-    with open_repository() as repo:
-        for user in repo.user_dao().list():
-            ret += f'<li>{user.username}</li>'
-    ret += '</ul>'
-    return ret
 
 
 if __name__ == '__main__':
